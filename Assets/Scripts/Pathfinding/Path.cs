@@ -1,5 +1,5 @@
 [System.Serializable]
 public class Path
 {
-    public Tile[] Steps;
+    public Tile[] tilesInPath;
 }

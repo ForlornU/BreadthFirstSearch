@@ -4,12 +4,12 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     #region Members and Events
-    public bool moving { get; private set; } = false;
+    public bool Moving { get; private set; } = false;
     public CharacterMoveData movedata;
     public int MovesLeft;
     public Tile characterTile;
     public LayerMask GroundLayerMask;
-    public Frontier charactersFrontier { get; set; }
+    public Frontier CharactersFrontier { get; set; }
 
     //Events
     public delegate void OnCompleteActions();
@@ -33,8 +33,7 @@ public class Character : MonoBehaviour
             return;
         }
 
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, -transform.up, out hit, 50f, GroundLayerMask))
+        if (Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, 50f, GroundLayerMask))
         {
             FinalizePosition(hit.transform.GetComponent<Tile>());
             return;
@@ -46,41 +45,41 @@ public class Character : MonoBehaviour
     IEnumerator MoveThroughPath(Path path, Tile startingPoint)
     {
         int step = 0;
-        int last = Mathf.Clamp(path.Steps.Length, 0, movedata.MaxMove + 1);
+        int last = Mathf.Clamp(path.tilesInPath.Length, 0, movedata.MaxMove + 1);
         Tile current = startingPoint;
         float time = 0f;
         float lerptime = 0f;
 
         while (time <= last)
         {
-            transform.position = Vector3.Lerp(current.transform.position, path.Steps[step].transform.position, lerptime / movedata.MoveSpeed);
+            transform.position = Vector3.Lerp(current.transform.position, path.tilesInPath[step].transform.position, lerptime / movedata.MoveSpeed);
             time += Time.deltaTime;
             lerptime += Time.deltaTime;
 
-            if (Vector3.Distance(transform.position, path.Steps[step].transform.position) < 0.05f)
+            if (Vector3.Distance(transform.position, path.tilesInPath[step].transform.position) < 0.05f)
             {
-                current = path.Steps[step];
+                current = path.tilesInPath[step];
                 step++;
                 lerptime = 0f;
 
                 int s = step;
-                if (step >= path.Steps.Length)
+                if (step >= path.tilesInPath.Length)
                 {
                     step--;
                     time += 0.1f;
 
-                    s = Mathf.Clamp(step, 0, path.Steps.Length);
+                    s = Mathf.Clamp(step, 0, path.tilesInPath.Length);
                 }
 
 
-                Vector3 dir = path.Steps[s - 1].transform.position - path.Steps[s].transform.position;
+                Vector3 dir = path.tilesInPath[s - 1].transform.position - path.tilesInPath[s].transform.position;
                 RotateToTile(dir);
             }
 
             yield return null;
         }
 
-        FinalizePosition(path.Steps[last - 1]);
+        FinalizePosition(path.tilesInPath[last - 1]);
     }
 
     bool PathIsValid(Path p)
@@ -89,9 +88,9 @@ public class Character : MonoBehaviour
 
         if (p == null)
             canmove = false;
-        else if (p.Steps == null)
+        else if (p.tilesInPath == null)
             canmove = false;
-        else if (p.Steps.Length < 1)
+        else if (p.tilesInPath.Length < 1)
             canmove = false;
 
         return canmove;
@@ -105,9 +104,9 @@ public class Character : MonoBehaviour
             Debug.Log("Path invalid, stopped early");
             return;
         }
-
-        moving = true;
-        characterTile.occupied = false;
+        MovesLeft -= _path.tilesInPath.Length;
+        Moving = true;
+        characterTile.Occupied = false;
         StartCoroutine(MoveThroughPath(_path, characterTile));
     }
 
@@ -115,8 +114,8 @@ public class Character : MonoBehaviour
     {
         transform.position = tile.transform.position;
         characterTile = tile;
-        moving = false;
-        tile.occupied = true;
+        Moving = false;
+        tile.Occupied = true;
         finished?.Invoke(); // Signal end of our event if not null (?.)
     }
 

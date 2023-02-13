@@ -5,8 +5,6 @@ public enum InteractState {Walking};
 public class Interact : MonoBehaviour
 {
     Camera mainCam;
-    //public GameObject CameraTarget;
-    //public float cameraMoveSens = 0.1f;
 
     public AudioClip click;
     public AudioClip pop;
@@ -33,27 +31,26 @@ public class Interact : MonoBehaviour
 
     void MouseUpdate()
     {
-        RaycastHit hit;
-        if (!Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out hit, 200f, interactMask))
+        if (!Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 200f, interactMask))
             return;
 
-        Tile c;
+        Tile hoveredTile;
         DeselectHoverCharacter();
 
         //If we hover over a Tile
-        if (c = hit.transform.GetComponent<Tile>())
+        if (hoveredTile = hit.transform.GetComponent<Tile>())
         {
-            if (selectedCharacter == null)
+            if (selectedCharacter == null || selectedCharacter.Moving)
                 return;
 
-            Navigate(c);
+            Navigate(hoveredTile);
         }
 
         //If we hover over a character
         else if (hit.transform.GetComponent<Character>())
         {
             hoverCharacter = hit.transform.GetComponent<Character>();
-            if (hoverCharacter.moving)
+            if (hoverCharacter.Moving)
                 return;
             hoverCharacter.characterTile.SetColor(HexColor.White);
 
@@ -75,89 +72,47 @@ public class Interact : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             selectedCharacter = hoverCharacter;
-            //SnapTarget(selectedCharacter.transform);
 
-            if (!selectedCharacter.moving)
-            {
-                Frontier f = pathfinder.BreadthFirstSearch(selectedCharacter);
-                selectedCharacter.charactersFrontier = f;//.NewFrontier(f);
-                pathfinder.ShowFrontierArea(f);
-                GetComponent<AudioSource>().PlayOneShot(pop);
-            }
+            if (selectedCharacter.Moving)
+                return;
+
+            Frontier newFrontier = pathfinder.BreadthFirstSearch(selectedCharacter);
+            selectedCharacter.CharactersFrontier = newFrontier;
+
+            pathfinder.illustrator.IllustrateFrontier(newFrontier);
+            GetComponent<AudioSource>().PlayOneShot(pop);
+
         }
     }
 
-    public void SelectCharacter(Character _char)
+    private void Navigate(Tile clickedTile)
     {
-        selectedCharacter = _char;
-        //SnapTarget(_char.transform);
-    }
+        if (!clickedTile.Reachable())
+            return;
 
-    private void Navigate(Tile c)
-    {
-        if (c.Reachable() && !selectedCharacter.moving)
+        Path pathToIllustrate = pathfinder.GetPathBetween(clickedTile, selectedCharacter.characterTile);
+        pathfinder.illustrator.IllustratePath(pathToIllustrate);
+
+        if (Input.GetMouseButtonDown(0))
         {
-            pathfinder.IllustrateBreadthPath(c);
+            GetComponent<AudioSource>().PlayOneShot(click);
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                Path p = pathfinder.GetBreadthPath(c);
-                AddToPath(p);
+            Path path = pathfinder.GetPathBetween(clickedTile, selectedCharacter.characterTile);
 
-                selectedCharacter.Move(p);
-                //Cam code
-                //GameObject.FindGameObjectWithTag("CameraManager").GetComponent<CameraManager>().ChangeCameraFollowState(true);
-                //SnapTarget(selectedCharacter.transform);
+            selectedCharacter.Move(path);
 
-                pathfinder.Clear();
+            pathfinder.ResetPathfinder();
 
-                selectedCharacter = null;
-            }
-
+            selectedCharacter = null;
         }
     }
 
-    void AddToPath(Path _path)
-    {
-        int moves = _path.Steps.Length;
-        selectedCharacter.MovesLeft -= moves;
-        Debug.Log(moves.ToString());
 
-        GetComponent<AudioSource>().PlayOneShot(click);
-    }
-
-    //private void ControlTarget(Vector3 motion)
-    //{
-    //    CameraTarget.transform.position += (motion.normalized * cameraMoveSens * Time.deltaTime); 
-    //}
-
-    //private void SnapTarget(Transform _parentTarget)
-    //{
-    //    CameraTarget.transform.position = _parentTarget.position;
-    //    CameraTarget.transform.parent = _parentTarget;
-    //}
-    //private void SnapTarget(Vector3 target)
-    //{
-    //    CameraTarget.transform.position = target;
-    //}
-    //private void UnsnapCamera()
-    //{
-    //    CameraTarget.transform.parent = null;
-    //}
 
     public void ChangeState(InteractState _state)
     {
         state = _state;
     }
-
-    //public void ShootMode(bool _state) //Change state to enum
-    //{
-    //    shoot = _state;
-
-    //    //Enum states with a switch here
-    //    //Move state will snap the camera back to target etc
-    //}
-
 }
     
 

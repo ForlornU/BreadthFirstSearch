@@ -85,9 +85,8 @@ public class GridEditor : EditorWindow
     void SetCharacterStartTile()
     {
         GameObject character = Selection.activeTransform.gameObject;
-        RaycastHit hit;
 
-        if (Physics.Raycast(character.transform.position, Vector3.down, out hit, 5f))
+        if (Physics.Raycast(character.transform.position, Vector3.down, out RaycastHit hit, 5f))
         {
             character.GetComponent<Character>().characterTile = hit.transform.GetComponent<Tile>();
         }

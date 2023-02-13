@@ -11,8 +11,8 @@ public class Tile : MonoBehaviour
     [SerializeField]
     GameObject GreenChild, WhiteChild;
 
-    public bool occupied { get; set; } = false;
-    public bool inFrontier { get; set; } = false;
+    public bool Occupied { get; set; } = false;
+    public bool InFrontier { get; set; } = false;
 
     /// <summary>
     /// Returns true if tile is not occupied and within reach
@@ -20,7 +20,7 @@ public class Tile : MonoBehaviour
     /// <returns></returns>
     public bool Reachable()
     {
-        if (!occupied && inFrontier)
+        if (!Occupied && InFrontier)
             return true;
         else
             return false;
