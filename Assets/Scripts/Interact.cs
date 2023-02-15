@@ -1,20 +1,20 @@
 using UnityEngine;
 
-public enum InteractState {Walking};
-
 public class Interact : MonoBehaviour
 {
-    Camera mainCam;
-
+    #region members
+    [SerializeField]
     public AudioClip click;
+    [SerializeField]
     public AudioClip pop;
-
-    private Character hoverCharacter;
-    public Character selectedCharacter;
+    [SerializeField]
     public LayerMask interactMask;
+
+    Camera mainCam;
+    Character hoverCharacter;
+    Character selectedCharacter;
     Pathfinder pathfinder;
-    Ray inputRay;
-    InteractState state;
+    #endregion
 
     private void Start()
     {
@@ -26,37 +26,40 @@ public class Interact : MonoBehaviour
 
     private void Update()
     {
+        DeselectHoverCharacter();
         MouseUpdate();
     }
 
-    void MouseUpdate()
+    private void MouseUpdate()
     {
         if (!Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 200f, interactMask))
             return;
 
-        Tile hoveredTile;
-        DeselectHoverCharacter();
+        if (hit.transform.GetComponent<Tile>())
+            HoverOverTile(hit.transform.GetComponent<Tile>());
 
-        //If we hover over a Tile
-        if (hoveredTile = hit.transform.GetComponent<Tile>())
-        {
-            if (selectedCharacter == null || selectedCharacter.Moving)
-                return;
-
-            Navigate(hoveredTile);
-        }
-
-        //If we hover over a character
         else if (hit.transform.GetComponent<Character>())
-        {
-            hoverCharacter = hit.transform.GetComponent<Character>();
-            if (hoverCharacter.Moving)
-                return;
-            hoverCharacter.characterTile.SetColor(HexColor.White);
+            HoverOverCharacter(hit.transform.GetComponent<Character>());
+    }
 
-            SelectCharacter();
-        }
+    private void HoverOverTile(Tile tile)
+    {
+        if (selectedCharacter == null || selectedCharacter.Moving)
+            return;
 
+        Navigate(tile);
+    }
+
+    private void HoverOverCharacter(Character character)
+    {
+        if (character.Moving)
+            return;
+
+        hoverCharacter = character;
+        hoverCharacter.characterTile.SetColor(HexColor.White);
+
+        if (Input.GetMouseButtonDown(0))
+            SelectCharacter(hoverCharacter);
     }
 
     private void DeselectHoverCharacter()
@@ -67,22 +70,15 @@ public class Interact : MonoBehaviour
         hoverCharacter = null;
     }
 
-    private void SelectCharacter()
+    private void SelectCharacter(Character character)
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            selectedCharacter = hoverCharacter;
+        selectedCharacter = hoverCharacter;
 
-            if (selectedCharacter.Moving)
-                return;
+        Frontier newFrontier = pathfinder.BreadthFirstSearch(selectedCharacter);
+        selectedCharacter.CharactersFrontier = newFrontier;
 
-            Frontier newFrontier = pathfinder.BreadthFirstSearch(selectedCharacter);
-            selectedCharacter.CharactersFrontier = newFrontier;
-
-            pathfinder.illustrator.IllustrateFrontier(newFrontier);
-            GetComponent<AudioSource>().PlayOneShot(pop);
-
-        }
+        pathfinder.illustrator.IllustrateFrontier(newFrontier);
+        GetComponent<AudioSource>().PlayOneShot(pop);
     }
 
     private void Navigate(Tile clickedTile)
@@ -90,28 +86,19 @@ public class Interact : MonoBehaviour
         if (!clickedTile.Reachable())
             return;
 
-        Path pathToIllustrate = pathfinder.GetPathBetween(clickedTile, selectedCharacter.characterTile);
-        pathfinder.illustrator.IllustratePath(pathToIllustrate);
+        Path currentPath = pathfinder.GetPathBetween(clickedTile, selectedCharacter.characterTile);
+        pathfinder.illustrator.IllustratePath(currentPath);
 
         if (Input.GetMouseButtonDown(0))
         {
             GetComponent<AudioSource>().PlayOneShot(click);
 
-            Path path = pathfinder.GetPathBetween(clickedTile, selectedCharacter.characterTile);
-
-            selectedCharacter.Move(path);
+            selectedCharacter.Move(currentPath);
 
             pathfinder.ResetPathfinder();
 
             selectedCharacter = null;
         }
-    }
-
-
-
-    public void ChangeState(InteractState _state)
-    {
-        state = _state;
     }
 }
     

@@ -104,6 +104,7 @@ public class Character : MonoBehaviour
             Debug.Log("Path invalid, stopped early");
             return;
         }
+
         MovesLeft -= _path.tilesInPath.Length;
         Moving = true;
         characterTile.Occupied = false;
