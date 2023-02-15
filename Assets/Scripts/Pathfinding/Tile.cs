@@ -11,6 +11,9 @@ public class Tile : MonoBehaviour
     [SerializeField]
     GameObject GreenChild, WhiteChild;
 
+    [SerializeField]
+    bool debug;
+
     public bool Occupied { get; set; } = false;
     public bool InFrontier { get; set; } = false;
 
@@ -39,6 +42,7 @@ public class Tile : MonoBehaviour
         {
             case HexColor.Green:
                 GreenChild.SetActive(true);
+                DebugWithArrow();
                 break;
             case HexColor.White:
                 WhiteChild.SetActive(true);
@@ -46,7 +50,17 @@ public class Tile : MonoBehaviour
             default:
                 break;
         }
+    }
 
+    void DebugWithArrow()
+    {
+        Transform childArrow = GreenChild.transform.GetChild(0);
+
+        if (!debug) 
+            childArrow.gameObject.SetActive(false);
+
+        if(childArrow != null && parent != null)
+            childArrow.rotation = Quaternion.LookRotation(parent.transform.position - transform.position, Vector3.up);
     }
 
     /// <summary>
