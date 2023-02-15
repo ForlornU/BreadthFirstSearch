@@ -4,11 +4,11 @@ public class Interact : MonoBehaviour
 {
     #region members
     [SerializeField]
-    public AudioClip click;
+    AudioClip click;
     [SerializeField]
-    public AudioClip pop;
+    AudioClip pop;
     [SerializeField]
-    public LayerMask interactMask;
+    LayerMask interactMask;
 
     Camera mainCam;
     Character hoverCharacter;
@@ -59,7 +59,7 @@ public class Interact : MonoBehaviour
         hoverCharacter.characterTile.SetColor(HexColor.White);
 
         if (Input.GetMouseButtonDown(0))
-            SelectCharacter(hoverCharacter);
+            SelectCharacter();
     }
 
     private void DeselectHoverCharacter()
@@ -70,14 +70,12 @@ public class Interact : MonoBehaviour
         hoverCharacter = null;
     }
 
-    private void SelectCharacter(Character character)
+    private void SelectCharacter()
     {
         selectedCharacter = hoverCharacter;
 
-        Frontier newFrontier = pathfinder.BreadthFirstSearch(selectedCharacter);
-        selectedCharacter.CharactersFrontier = newFrontier;
+        pathfinder.FindPaths(selectedCharacter);
 
-        pathfinder.illustrator.IllustrateFrontier(newFrontier);
         GetComponent<AudioSource>().PlayOneShot(pop);
     }
 
@@ -86,8 +84,7 @@ public class Interact : MonoBehaviour
         if (!clickedTile.Reachable())
             return;
 
-        Path currentPath = pathfinder.GetPathBetween(clickedTile, selectedCharacter.characterTile);
-        pathfinder.illustrator.IllustratePath(currentPath);
+        Path currentPath = pathfinder.PathBetween(clickedTile, selectedCharacter.characterTile);
 
         if (Input.GetMouseButtonDown(0))
         {

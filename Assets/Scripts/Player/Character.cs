@@ -5,20 +5,15 @@ public class Character : MonoBehaviour
 {
     #region Members and Events
     public bool Moving { get; private set; } = false;
-    public CharacterMoveData movedata;
-    public int MovesLeft;
-    public Tile characterTile;
-    public LayerMask GroundLayerMask;
-    public Frontier CharactersFrontier { get; set; }
 
-    //Events
-    public delegate void OnCompleteActions();
-    public event OnCompleteActions finished;
+    public CharacterMoveData movedata;
+    public Tile characterTile;
+    [SerializeField]
+    LayerMask GroundLayerMask;
     #endregion
 
     private void Awake()
     {
-        MovesLeft = movedata.MaxMove;
         FindTileAtStart();
     }
 
@@ -42,73 +37,38 @@ public class Character : MonoBehaviour
         Debug.Log("Unable to find a start position");
     }
 
-    IEnumerator MoveThroughPath(Path path, Tile startingPoint)
+    IEnumerator MoveThroughPath(Path path)
     {
         int step = 0;
-        int last = Mathf.Clamp(path.tilesInPath.Length, 0, movedata.MaxMove + 1);
-        Tile current = startingPoint;
-        float time = 0f;
-        float lerptime = 0f;
+        int pathlength = Mathf.Clamp(path.tilesInPath.Length, 0, movedata.MaxMove + 1);
+        Tile currentTile = path.tilesInPath[0];
+        float animationtime = 0f;
+        const float minimumistanceFromNextTile = 0.05f;
 
-        while (time <= last)
+        while (step < pathlength)
         {
-            transform.position = Vector3.Lerp(current.transform.position, path.tilesInPath[step].transform.position, lerptime / movedata.MoveSpeed);
-            time += Time.deltaTime;
-            lerptime += Time.deltaTime;
+            yield return null; // Wait for one frame before continuing
+            Vector3 nextTilePosition = path.tilesInPath[step].transform.position;
 
-            if (Vector3.Distance(transform.position, path.tilesInPath[step].transform.position) < 0.05f)
-            {
-                current = path.tilesInPath[step];
-                step++;
-                lerptime = 0f;
+            MoveAndRotate(currentTile.transform.position, nextTilePosition, animationtime / movedata.MoveSpeed);
+            animationtime += Time.deltaTime;
 
-                int s = step;
-                if (step >= path.tilesInPath.Length)
-                {
-                    step--;
-                    time += 0.1f;
+            if (Vector3.Distance(transform.position, nextTilePosition) > minimumistanceFromNextTile)
+                continue;
 
-                    s = Mathf.Clamp(step, 0, path.tilesInPath.Length);
-                }
-
-
-                Vector3 dir = path.tilesInPath[s - 1].transform.position - path.tilesInPath[s].transform.position;
-                RotateToTile(dir);
-            }
-
-            yield return null;
+            currentTile = path.tilesInPath[step];
+            step++;
+            animationtime = 0f;
         }
 
-        FinalizePosition(path.tilesInPath[last - 1]);
-    }
-
-    bool PathIsValid(Path p)
-    {
-        bool canmove = true;
-
-        if (p == null)
-            canmove = false;
-        else if (p.tilesInPath == null)
-            canmove = false;
-        else if (p.tilesInPath.Length < 1)
-            canmove = false;
-
-        return canmove;
+        FinalizePosition(path.tilesInPath[pathlength - 1]);
     }
 
     public void Move(Path _path)
     {
-        if (!PathIsValid(_path))
-        {
-            finished();
-            Debug.Log("Path invalid, stopped early");
-            return;
-        }
-
-        MovesLeft -= _path.tilesInPath.Length;
         Moving = true;
         characterTile.Occupied = false;
-        StartCoroutine(MoveThroughPath(_path, characterTile));
+        StartCoroutine(MoveThroughPath(_path));
     }
 
     void FinalizePosition(Tile tile)
@@ -117,12 +77,13 @@ public class Character : MonoBehaviour
         characterTile = tile;
         Moving = false;
         tile.Occupied = true;
-        finished?.Invoke(); // Signal end of our event if not null (?.)
     }
 
-    void RotateToTile(Vector3 direction)
+    void MoveAndRotate(Vector3 origin, Vector3 destination, float duration)
     {
-        transform.rotation = Quaternion.LookRotation(-direction, Vector3.up);
+        transform.position = Vector3.Lerp(origin, destination, duration);
+
+        transform.rotation = Quaternion.LookRotation(destination - origin, Vector3.up);
     }
 
 }

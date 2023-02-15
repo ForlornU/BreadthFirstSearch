@@ -5,52 +5,30 @@ using UnityEngine;
 [RequireComponent(typeof(PathIllustrator))]
 public class Pathfinder : MonoBehaviour
 {
-    public PathIllustrator illustrator { get; private set; }
+    PathIllustrator illustrator;
     PathCalculator pathcalculator;
-    public LayerMask tileMask;
+    [SerializeField]
+    LayerMask tileMask;
 
     Frontier currentFrontier = new Frontier();
     Queue<Tile> openSet = new Queue<Tile>();
 
-    bool CanFindPath()
+    private void Start()
     {
         if (pathcalculator == null)
             pathcalculator = GetComponent<PathCalculator>();
         if (illustrator == null)
             illustrator = GetComponent<PathIllustrator>();
-
-        if(pathcalculator == null || illustrator == null)
-            return false;
-        else
-            return true;
     }
 
-    //public void ShowFrontierArea(Frontier frontier)
-    //{
-    //    foreach (Tile item in frontier.tiles)
-    //    {
-    //        item.SetColor(HexColor.Green);
-    //    }
-    //}
-
-    //public void IllustratePath(Tile destination, Tile source)
-    //{
-    //    illustrator.IllustratePath(GetPathBetween(destination, source));
-    //}
-
-    bool CanInitializeSearch()
+    /// <summary>
+    /// Main pathfinding function, marks tiles as being in frontier, while keeping a copy of the frontier
+    /// in "currentFrontier" for later clearing
+    /// </summary>
+    /// <param name="character"></param>
+    public void FindPaths(Character character)
     {
-        if (!CanFindPath())
-            return false;
-
         ResetPathfinder();
-        return true;
-    }
-
-    public Frontier BreadthFirstSearch(Character character)
-    {
-        if (!CanInitializeSearch())
-            return null;
 
         openSet.Enqueue(character.characterTile);
         character.characterTile.cost = 0;
@@ -62,39 +40,37 @@ public class Pathfinder : MonoBehaviour
             currentTile.InFrontier = true;
             currentFrontier.tiles.Add(currentTile);
 
-            foreach (Tile nextTile in pathcalculator.FindAdjacentTiles(currentTile, tileMask))
+            foreach (Tile adjacentTile in pathcalculator.FindAdjacentTiles(currentTile, tileMask))
             {
-                if (!currentFrontier.tiles.Contains(nextTile))
-                {
+                if (currentFrontier.tiles.Contains(adjacentTile))
+                    continue;
 
-                    nextTile.parent = currentTile;
-                    nextTile.cost = currentTile.cost + 1;
+                adjacentTile.cost = currentTile.cost + 1;
 
-                    if (nextTile.cost >= character.MovesLeft)
-                        continue;
+                if (adjacentTile.cost >= character.movedata.MaxMove)
+                    continue;
 
-                    openSet.Enqueue(nextTile);
-                    currentFrontier.tiles.Add(nextTile);
-                }
+                adjacentTile.parent = currentTile;
+
+                openSet.Enqueue(adjacentTile);
+                currentFrontier.tiles.Add(adjacentTile);
             }
         }
 
-        return currentFrontier;
+        illustrator.IllustrateFrontier(currentFrontier);
     }
 
-    public Path GetPathBetween(Tile dest, Tile source)
+    public Path PathBetween(Tile dest, Tile source)
     {
-        return pathcalculator.MakePath(dest, source);
+        Path p = pathcalculator.MakePath(dest, source);
+        illustrator.IllustratePath(p);
+        return p;
     }
 
     public void ResetPathfinder()
     {
         illustrator.Clear();
 
-        foreach (Tile item in openSet)
-        {
-            item.InFrontier = false;
-        }
         foreach (Tile item in currentFrontier.tiles)
         {
             item.InFrontier = false;
