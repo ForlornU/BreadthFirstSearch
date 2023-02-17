@@ -61,10 +61,10 @@ public class Pathfinder : MonoBehaviour
     }
 
     public Path PathBetween(Tile dest, Tile source)
-    {
-        Path p = pathcalculator.MakePath(dest, source);
-        illustrator.IllustratePath(p);
-        return p;
+    { 
+        Path path = pathcalculator.MakePath(dest, source);
+        illustrator.IllustratePath(path);
+        return path;
     }
 
     public void ResetPathfinder()

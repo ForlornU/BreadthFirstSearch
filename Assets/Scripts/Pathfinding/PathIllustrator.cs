@@ -25,7 +25,7 @@ public class PathIllustrator : MonoBehaviour
     {
         foreach (Tile item in frontier.tiles)
         {
-            item.SetColor(HexColor.Green);
+            item.SetColor(TileColor.Green);
         }
     }
 

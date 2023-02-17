@@ -77,6 +77,7 @@ public class Character : MonoBehaviour
         characterTile = tile;
         Moving = false;
         tile.Occupied = true;
+        tile.occupyingCharacter = this;
     }
 
     void MoveAndRotate(Vector3 origin, Vector3 destination, float duration)

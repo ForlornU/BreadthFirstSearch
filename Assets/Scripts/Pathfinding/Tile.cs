@@ -1,11 +1,12 @@
 using UnityEngine;
 
-public enum HexColor { Green, White };
+public enum TileColor { Green, Highlighted };
 
 public class Tile : MonoBehaviour
 {
     public Tile parent;
     public Tile ladder;
+    public Character occupyingCharacter;
     public float cost;
 
     [SerializeField]
@@ -14,37 +15,27 @@ public class Tile : MonoBehaviour
     [SerializeField]
     bool debug;
 
+
     public bool Occupied { get; set; } = false;
     public bool InFrontier { get; set; } = false;
-
-    /// <summary>
-    /// Returns true if tile is not occupied and within reach
-    /// </summary>
-    /// <returns></returns>
-    public bool Reachable()
-    {
-        if (!Occupied && InFrontier)
-            return true;
-        else
-            return false;
-    }
+    public bool CanBeReached { get { return !Occupied && InFrontier; } }
 
     /// <summary>
     /// Changes color of the tile by activating child-objects of different colors
     /// </summary>
     /// <param name="col"></param>
-    public void SetColor(HexColor col)
+    public void SetColor(TileColor col)
     {
 
         ClearColor();
 
         switch (col)
         {
-            case HexColor.Green:
+            case TileColor.Green:
                 GreenChild.SetActive(true);
                 DebugWithArrow();
                 break;
-            case HexColor.White:
+            case TileColor.Highlighted:
                 WhiteChild.SetActive(true);
                 break;
             default:

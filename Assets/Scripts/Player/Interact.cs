@@ -11,7 +11,8 @@ public class Interact : MonoBehaviour
     LayerMask interactMask;
 
     Camera mainCam;
-    Character hoverCharacter;
+    Tile currentTile;
+    //Character hoverCharacter;
     Character selectedCharacter;
     Pathfinder pathfinder;
     #endregion
@@ -26,7 +27,7 @@ public class Interact : MonoBehaviour
 
     private void Update()
     {
-        DeselectHoverCharacter();
+        Clear();
         MouseUpdate();
     }
 
@@ -35,68 +36,61 @@ public class Interact : MonoBehaviour
         if (!Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 200f, interactMask))
             return;
 
-        if (hit.transform.GetComponent<Tile>())
-            HoverOverTile(hit.transform.GetComponent<Tile>());
-
-        else if (hit.transform.GetComponent<Character>())
-            HoverOverCharacter(hit.transform.GetComponent<Character>());
+        currentTile = hit.transform.GetComponent<Tile>();
+        InspectTile();
     }
 
-    private void HoverOverTile(Tile tile)
+    private void InspectTile()
     {
-        if (selectedCharacter == null || selectedCharacter.Moving)
-            return;
-
-        Navigate(tile);
+        if (currentTile.Occupied)
+            InspectCharacter();
+        else
+            Navigate();
     }
 
-    private void HoverOverCharacter(Character character)
+    private void InspectCharacter()
     {
-        if (character.Moving)
+        if (currentTile.occupyingCharacter.Moving)
             return;
 
-        hoverCharacter = character;
-        hoverCharacter.characterTile.SetColor(HexColor.White);
+        currentTile.SetColor(TileColor.Highlighted);
 
         if (Input.GetMouseButtonDown(0))
             SelectCharacter();
     }
 
-    private void DeselectHoverCharacter()
+    private void Clear()
     {
-        if (hoverCharacter != null && hoverCharacter.characterTile != null)
-            hoverCharacter.characterTile.ClearColor();
+        if (currentTile == null  || currentTile.Occupied == false)
+            return;
 
-        hoverCharacter = null;
+        currentTile.ClearColor();
+        currentTile = null;
     }
 
     private void SelectCharacter()
     {
-        selectedCharacter = hoverCharacter;
-
+        selectedCharacter = currentTile.occupyingCharacter;
         pathfinder.FindPaths(selectedCharacter);
-
         GetComponent<AudioSource>().PlayOneShot(pop);
     }
 
-    private void Navigate(Tile clickedTile)
+    private void Navigate()
     {
-        if (!clickedTile.Reachable())
+        if (selectedCharacter == null)
             return;
 
-        Path currentPath = pathfinder.PathBetween(clickedTile, selectedCharacter.characterTile);
+        if (selectedCharacter.Moving == true || currentTile.CanBeReached == false)
+            return;
+
+        Path currentPath = pathfinder.PathBetween(currentTile, selectedCharacter.characterTile);
 
         if (Input.GetMouseButtonDown(0))
         {
             GetComponent<AudioSource>().PlayOneShot(click);
-
             selectedCharacter.Move(currentPath);
-
             pathfinder.ResetPathfinder();
-
             selectedCharacter = null;
         }
     }
 }
-    
-
