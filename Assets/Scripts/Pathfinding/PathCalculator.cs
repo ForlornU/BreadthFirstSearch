@@ -12,31 +12,27 @@ public class PathCalculator : MonoBehaviour
     public List<Tile> FindAdjacentTiles(Tile origin, LayerMask tileOnlyMask)
     {
         List<Tile> tiles = new List<Tile>();
-
-        Vector3 dir = Vector3.forward;
+        Vector3 direction = Vector3.forward;
         float rayLength = 50f;
+        float rayHeightOffset = 1f;
 
         //Rotate a raycast in 60 degree steps and find all adjacent tiles
         for (int i = 0; i < 6; i++)
         {
-            dir = Quaternion.Euler(0f, 60f, 0f) * dir;
+            direction = Quaternion.Euler(0f, 60f, 0f) * direction;
 
-            Vector3 aboveTilePos = (origin.transform.position + dir).With(y: origin.transform.position.y+5);
+            Vector3 aboveTilePos = (origin.transform.position + direction).With(y: origin.transform.position.y + rayHeightOffset);
 
             if(Physics.Raycast(aboveTilePos, Vector3.down, out RaycastHit hit, rayLength, tileOnlyMask))
             {
-                Tile hitTile;
-                if (hitTile = hit.transform.GetComponent<Tile>())
-                {
-                    if(hitTile.Occupied == false)
-                        tiles.Add(hitTile);
-                }
+                Tile hitTile = hit.transform.GetComponent<Tile>();
+                if(hitTile.Occupied == false)
+                    tiles.Add(hitTile);
             }
         }
 
-        //Also return ladder tiles
-        if (origin.ladder != null)
-            tiles.Add(origin.ladder);
+        if (origin.connectedTile != null)
+            tiles.Add(origin.connectedTile);
 
         return tiles;
     }
@@ -51,23 +47,16 @@ public class PathCalculator : MonoBehaviour
     {
         List<Tile> tiles = new List<Tile>();
         Tile current = destination;
-        int safetytick = 100;
 
         while (current != origin)
         {
-            safetytick--;
-            if (safetytick < 1)
-            {
-                Debug.Log("Broke out of MakePath to avoid infinite loop");
-                break;
-            }
-
             tiles.Add(current);
             if (current.parent != null)
                 current = current.parent;
             else
                 break;
         }
+
         tiles.Add(origin);
         tiles.Reverse();
 

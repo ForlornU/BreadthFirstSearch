@@ -5,7 +5,7 @@ public enum TileColor { Green, Highlighted };
 public class Tile : MonoBehaviour
 {
     public Tile parent;
-    public Tile ladder;
+    public Tile connectedTile;
     public Character occupyingCharacter;
     public float cost;
 

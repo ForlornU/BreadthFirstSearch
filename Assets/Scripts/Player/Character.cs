@@ -47,7 +47,7 @@ public class Character : MonoBehaviour
 
         while (step < pathlength)
         {
-            yield return null; // Wait for one frame before continuing
+            yield return null;
             Vector3 nextTilePosition = path.tilesInPath[step].transform.position;
 
             MoveAndRotate(currentTile.transform.position, nextTilePosition, animationtime / movedata.MoveSpeed);
@@ -83,8 +83,7 @@ public class Character : MonoBehaviour
     void MoveAndRotate(Vector3 origin, Vector3 destination, float duration)
     {
         transform.position = Vector3.Lerp(origin, destination, duration);
-
-        transform.rotation = Quaternion.LookRotation(destination - origin, Vector3.up);
+        transform.rotation = Quaternion.LookRotation(origin.DirectionTo(destination).Flat(), Vector3.up);
     }
 
 }

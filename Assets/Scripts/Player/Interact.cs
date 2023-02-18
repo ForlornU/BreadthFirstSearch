@@ -12,7 +12,6 @@ public class Interact : MonoBehaviour
 
     Camera mainCam;
     Tile currentTile;
-    //Character hoverCharacter;
     Character selectedCharacter;
     Pathfinder pathfinder;
     #endregion
@@ -45,7 +44,7 @@ public class Interact : MonoBehaviour
         if (currentTile.Occupied)
             InspectCharacter();
         else
-            Navigate();
+            NavigateToTile();
     }
 
     private void InspectCharacter()
@@ -75,7 +74,7 @@ public class Interact : MonoBehaviour
         GetComponent<AudioSource>().PlayOneShot(pop);
     }
 
-    private void Navigate()
+    private void NavigateToTile()
     {
         if (selectedCharacter == null)
             return;

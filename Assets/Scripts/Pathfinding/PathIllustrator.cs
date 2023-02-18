@@ -11,13 +11,14 @@ public class PathIllustrator : MonoBehaviour
         line = GetComponent<LineRenderer>();
     }
 
-    public void IllustratePath(Path _p)
+    public void IllustratePath(Path path)
     {
-        line.positionCount = _p.tilesInPath.Length;
+        line.positionCount = path.tilesInPath.Length;
 
-        for (int i = 0; i < _p.tilesInPath.Length; i++)
+        for (int i = 0; i < path.tilesInPath.Length; i++)
         {
-            line.SetPosition(i, _p.tilesInPath[i].transform.position.With(y: LineHeightOffset));
+            Transform tileTransform = path.tilesInPath[i].transform;
+            line.SetPosition(i, tileTransform.position.With(y: tileTransform.position.y + LineHeightOffset));
         }
     }
 

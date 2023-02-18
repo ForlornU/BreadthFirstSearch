@@ -11,13 +11,14 @@ public class GridEditor : EditorWindow
     #endregion
 
     [MenuItem("Window / Tools / Grid Generator")]
+
     public static void ShowWindow()
     {
         EditorWindow window = GetWindow(typeof(GridEditor));
         //window.position = new Rect(Screen.width / 2f, Screen.height / 2f, 325, 175);
     }
 
-    private void OnGUI()
+    void OnGUI()
     {
         if (!CanShowWindow())
             return;
@@ -25,7 +26,7 @@ public class GridEditor : EditorWindow
         SetFields();
     }
 
-    private void SetFields()
+    void SetFields()
     {
         gridPosition = EditorGUILayout.Vector3Field("Grid Start Position", gridPosition);
 
@@ -61,7 +62,7 @@ public class GridEditor : EditorWindow
         tg.GenerateGrid(tileGO, gridSize);
     }
 
-    private void AssignGridParent()
+    void AssignGridParent()
     {
         if (parent == null)
             parent = new GameObject("Grid");
@@ -101,8 +102,8 @@ public class GridEditor : EditorWindow
 
         if (tiles[0].GetComponent<Tile>() && tiles[1].GetComponent<Tile>())
         {
-            tiles[0].GetComponent<Tile>().ladder = tiles[1].GetComponent<Tile>();
-            tiles[1].GetComponent<Tile>().ladder = tiles[0].GetComponent<Tile>();
+            tiles[0].GetComponent<Tile>().connectedTile = tiles[1].GetComponent<Tile>();
+            tiles[1].GetComponent<Tile>().connectedTile = tiles[0].GetComponent<Tile>();
         }
     }
 }
