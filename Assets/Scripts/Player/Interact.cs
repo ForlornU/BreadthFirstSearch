@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Interact : MonoBehaviour
 {
-    #region members
+    #region member fields
     [SerializeField]
     AudioClip click;
     [SerializeField]

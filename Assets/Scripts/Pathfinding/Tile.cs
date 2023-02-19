@@ -4,6 +4,7 @@ public enum TileColor { Green, Highlighted };
 
 public class Tile : MonoBehaviour
 {
+    #region member fields
     public Tile parent;
     public Tile connectedTile;
     public Character occupyingCharacter;
@@ -15,10 +16,10 @@ public class Tile : MonoBehaviour
     [SerializeField]
     bool debug;
 
-
     public bool Occupied { get; set; } = false;
     public bool InFrontier { get; set; } = false;
     public bool CanBeReached { get { return !Occupied && InFrontier; } }
+    #endregion
 
     /// <summary>
     /// Changes color of the tile by activating child-objects of different colors

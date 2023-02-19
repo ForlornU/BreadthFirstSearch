@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class GridEditor : EditorWindow
 {
-    #region membervariables
+    #region member fields
     GameObject parent;
-    GameObject tileGO;
+    GameObject tile;
     Vector3 gridPosition;
     Vector2Int gridSize = new Vector2Int(15, 12);
     #endregion
@@ -15,7 +15,6 @@ public class GridEditor : EditorWindow
     public static void ShowWindow()
     {
         EditorWindow window = GetWindow(typeof(GridEditor));
-        //window.position = new Rect(Screen.width / 2f, Screen.height / 2f, 325, 175);
     }
 
     void OnGUI()
@@ -48,6 +47,9 @@ public class GridEditor : EditorWindow
 
     }
 
+    /// <summary>
+    /// Add the TileGenerator script to a new object with the currently selected values
+    /// </summary>
     void CreateGrid()
     {
         TileGenerator tg;
@@ -59,7 +61,7 @@ public class GridEditor : EditorWindow
         else
             tg = parent.GetComponent<TileGenerator>();
 
-        tg.GenerateGrid(tileGO, gridSize);
+        tg.GenerateGrid(tile, gridSize);
     }
 
     void AssignGridParent()
@@ -72,9 +74,9 @@ public class GridEditor : EditorWindow
 
     bool CanShowWindow()
     {
-        tileGO = (GameObject)EditorGUILayout.ObjectField("Tile", tileGO, typeof(GameObject), true);
+        tile = (GameObject)EditorGUILayout.ObjectField("Tile", tile, typeof(GameObject), true);
 
-        if (tileGO == null)
+        if (tile == null)
         {
             GUILayout.Label("Please attach a GameObject to create a grid from");
             return false;

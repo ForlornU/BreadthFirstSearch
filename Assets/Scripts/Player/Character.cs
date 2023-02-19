@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-    #region Members and Events
+    #region member fields
     public bool Moving { get; private set; } = false;
 
     public CharacterMoveData movedata;

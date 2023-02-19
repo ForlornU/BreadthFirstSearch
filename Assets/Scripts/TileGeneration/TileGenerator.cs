@@ -14,20 +14,15 @@ public class TileGenerator : MonoBehaviour
         }
     }
 
-    Vector2 DetermineTileSize(Mesh tile)
+    Vector2 DetermineTileSize(Bounds tileBounds)
     {
-        Bounds b = tile.bounds;
-
-        float x = (b.extents.x * 2) * 0.75f;
-        float y = (b.extents.z * 2);
-
-        return new Vector2(x, y);
+        return new Vector2((tileBounds.extents.x * 2) * 0.75f, (tileBounds.extents.z * 2));
     }
 
     public void GenerateGrid(GameObject tile, Vector2Int gridsize)
     {
         ClearGrid();
-        Vector2 tileSize = DetermineTileSize(tile.GetComponent<MeshFilter>().sharedMesh);
+        Vector2 tileSize = DetermineTileSize(tile.GetComponent<MeshFilter>().sharedMesh.bounds);
         Vector3 position = transform.position;
 
         for (int x = 0; x < gridsize.x; x++)
@@ -53,8 +48,6 @@ public class TileGenerator : MonoBehaviour
     {
         GameObject newTile = Instantiate(t.gameObject, pos, Quaternion.identity, transform);
         newTile.name = "Tile " + id;
-
-        //newTile.GetComponent<Tile>().gridCoordinates = id;
 
         Debug.Log("Created a tile!");
     }
