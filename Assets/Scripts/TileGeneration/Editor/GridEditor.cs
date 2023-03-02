@@ -39,7 +39,7 @@ public class GridEditor : EditorWindow
         if (GUILayout.Button("(re)Generate"))
             CreateGrid();
 
-        if (GUILayout.Button("Create Ladder"))
+        if (GUILayout.Button("Connect two tiles"))
             CreateLadder();
 
         if (GUILayout.Button("Connect character and tile"))

@@ -10,13 +10,10 @@ public class Pathfinder : MonoBehaviour
     LayerMask tileMask;
 
     Frontier currentFrontier = new Frontier();
-    Queue<Tile> openSet = new Queue<Tile>();
     #endregion
 
     private void Start()
     {
-        //if (pathcalculator == null)
-        //    pathcalculator = GetComponent<PathCalculator>();
         if (illustrator == null)
             illustrator = GetComponent<PathIllustrator>();
     }
@@ -30,34 +27,48 @@ public class Pathfinder : MonoBehaviour
     {
         ResetPathfinder();
 
+        Queue<Tile> openSet = new Queue<Tile>();
         openSet.Enqueue(character.characterTile);
         character.characterTile.cost = 0;
-
+    
         while (openSet.Count > 0)
         {
             Tile currentTile = openSet.Dequeue();
 
-            currentTile.InFrontier = true;
-            currentFrontier.tiles.Add(currentTile);
-
             foreach (Tile adjacentTile in FindAdjacentTiles(currentTile))
             {
-                if (currentFrontier.tiles.Contains(adjacentTile))
+                if (openSet.Contains(adjacentTile))
                     continue;
 
                 adjacentTile.cost = currentTile.cost + 1;
 
-                if (adjacentTile.cost >= character.movedata.MaxMove)
+                if (!IsValidTile(adjacentTile, character.movedata.MaxMove))
                     continue;
 
                 adjacentTile.parent = currentTile;
 
                 openSet.Enqueue(adjacentTile);
-                currentFrontier.tiles.Add(adjacentTile);
+                AddTileToFrontier(adjacentTile);
             }
         }
 
         illustrator.IllustrateFrontier(currentFrontier);
+    }
+
+    bool IsValidTile(Tile tile, int maxcost)
+    {
+        bool valid = false;
+
+        if (!currentFrontier.tiles.Contains(tile) && tile.cost <= maxcost)
+            valid = true;
+
+        return valid;
+    }
+
+    void AddTileToFrontier(Tile tile)
+    {
+        tile.InFrontier = true;
+        currentFrontier.tiles.Add(tile);
     }
 
     /// <summary>
@@ -101,7 +112,6 @@ public class Pathfinder : MonoBehaviour
     /// <returns></returns>
     public Path PathBetween(Tile dest, Tile source)
     {
-        //Path path = pathcalculator.MakePath(dest, source);
         Path path = MakePath(dest, source);
         illustrator.IllustratePath(path);
         return path;
@@ -146,7 +156,6 @@ public class Pathfinder : MonoBehaviour
             item.ClearColor();
         }
 
-        openSet.Clear();
         currentFrontier.tiles.Clear();
     }
 }
