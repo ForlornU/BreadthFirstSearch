@@ -1,6 +1,6 @@
 # BreadthFirstSearch
 
-![alt text](https://github.com/ForlornU/Images/blob/main/img.png)
+![Screenshot](https://github.com/ForlornU/Images/blob/d59881eec2702486800f83f02255a723a48e460e/img.png)
 
 BFS-Style pathfinding for use across hexagonal tiles in the unity3d engine!
 
